@@ -2,9 +2,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Match, MarketProbability, Language } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fallback logic to support different environments (Vercel/Vite vs Local)
+const getApiKey = () => {
+  // @ts-ignore - support Vite/Vercel environment variables
+  const viteKey = import.meta.env?.VITE_API_KEY;
+  const processKey = typeof process !== 'undefined' ? process.env?.API_KEY : null;
+  return viteKey || processKey;
+};
+
+const apiKey = getApiKey();
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export async function fetchMatchDataViaAI(query: string): Promise<Match | null> {
+  if (!ai) {
+    console.error("AI initialized failed: Missing API Key");
+    return null;
+  }
+
   const prompt = `Act as a football statistician. Provide current league, team form (last 5), goals stats, and fair bookmaker odds for: "${query}". Return structured JSON only.`;
   try {
     const response = await ai.models.generateContent({
@@ -72,6 +86,8 @@ export async function explainRecommendedBets(
   recommendations: MarketProbability[],
   lang: Language = 'en'
 ): Promise<Record<string, string>> {
+  if (!ai) return {};
+
   const prompt = `
     Analyze the match: ${match.homeTeam.name} vs ${match.awayTeam.name}.
     Explain the statistical reasoning for these markets: ${recommendations.map(r => r.marketCode).join(', ')}.
