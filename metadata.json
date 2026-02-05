@@ -1,0 +1,5 @@
+{
+  "name": "GoalMind - Professional Football Analysis",
+  "description": "A sophisticated football statistics and probability engine that identifies value betting opportunities using Poisson distribution and AI-driven reasoning. Supports multi-language (EN, FR, ES, AR) and RTL layouts.",
+  "requestFramePermissions": []
+}
